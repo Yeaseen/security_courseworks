@@ -176,6 +176,44 @@ def test_play_hand(player: Hand, opponent: Hand):
     result = play_hand(player, opponent)
     assert is_valid_play_hand(player, opponent, result)
 
+
+## ---
+# Write at least one test for each of the is_valid functions.
+# These tests do NOT need to use hypothesis.
+
+def test_is_valid_deal_1():
+    num_players = 2
+    dealt_hands = [[Card(Rank.TWO, Suit.SPADES), 
+                   Card(Rank.FOUR, Suit.CLUBS), 
+                   Card(Rank.THREE, Suit.CLUBS),
+                   Card(Rank.TEN, Suit.HEARTS),
+                   Card(Rank.ACE, Suit.SPADES),
+                   ],
+                   [Card(Rank.JACK, Suit.SPADES), 
+                     Card(Rank.JACK, Suit.CLUBS), 
+                     Card(Rank.SIX, Suit.HEARTS),
+                     Card(Rank.SEVEN, Suit.DIAMONDS),
+                     Card(Rank.ACE, Suit.CLUBS),
+                    ]]
+    assert is_valid_deal(num_players, dealt_hands)
+
+def test_is_valid_draw_1():
+    old_hand = [Card(Rank.TWO, Suit.SPADES), 
+                   Card(Rank.FOUR, Suit.CLUBS), 
+                   Card(Rank.THREE, Suit.CLUBS),
+                   Card(Rank.TEN, Suit.HEARTS),
+                   Card(Rank.ACE, Suit.SPADES),
+                   ]
+    new_hand = [Card(Rank.TWO, Suit.SPADES), 
+                   Card(Rank.FOUR, Suit.CLUBS), 
+                   Card(Rank.THREE, Suit.CLUBS),
+                   Card(Rank.TEN, Suit.HEARTS),
+                   Card(Rank.ACE, Suit.SPADES),
+                   ]
+    num_to_draw = 0 
+    assert is_valid_draw(old_hand, num_to_draw, new_hand)
+
+
 def test_is_valid_play_hand_1():
     player_hand = [Card(Rank.TWO, Suit.SPADES), 
                    Card(Rank.FOUR, Suit.CLUBS), 
@@ -192,26 +230,11 @@ def test_is_valid_play_hand_1():
                     ]
     assert is_valid_play_hand(player_hand, opponent_hand, GameResult.LOSS)    
 
-"""
-
-
-## ---
-# Write at least one test for each of the is_valid functions.
-# These tests do NOT need to use hypothesis.
-
-def test_is_valid_deal_1():
-    raise NotImplementedError
-
-def test_is_valid_draw_1():
-    raise NotImplementedError
-
-
-"""
-
 
 
 
 """
+
 def main():
     
     print("!Hello, world")
@@ -246,6 +269,7 @@ def main():
     print(rank_count)
     print(suit_count)
     
+    
     your_map = {1: 3, 2: 1, 3: 2, 4: 3, 5: 1}
 
     # Sorting the dictionary
@@ -265,4 +289,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 """
