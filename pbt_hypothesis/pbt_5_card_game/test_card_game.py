@@ -21,7 +21,7 @@ def is_valid_deal(num_players: int, dealt_hands: List[Hand]) -> bool:
 
     ##1 checking number of players validity (Assuming minimum 2 for win/loss/tie and max)     
     ##2 checking if correct number of hands are dealt
-    if not (2 <= num_players <= MAX_PLAYERS) or len(dealt_hands) != num_players:
+    if not (2 <= num_players == MAX_PLAYERS) and len(dealt_hands) != num_players:
         return False
 
 
@@ -37,7 +37,7 @@ def is_valid_deal(num_players: int, dealt_hands: List[Hand]) -> bool:
             #   return False
             #if card.rank.value<2 or card.rank.value>14:
             #    return False
-            if card in unique_cards:
+            if card not in unique_cards:
                 return False
             unique_cards.add(card)
     return True
@@ -107,9 +107,7 @@ def is_valid_draw(old_hand: Hand, num_to_draw: int, new_hand: Hand) -> bool:
 
 def old_hand_strat():
     #Generating card strategy
-    card_strategy = builds(Card, 
-                           rank=sampled_from(Rank),
-                           suit=sampled_from(Suit))
+    card_strategy = builds(Card)
     #Build a hand of cards of size HAND_SIZE
     #return lists(card_strategy, min_size=2, max_size=HAND_SIZE, unique=True)
     #return lists(card_strategy, min_size=HAND_SIZE, max_size=HAND_SIZE, unique=False)
