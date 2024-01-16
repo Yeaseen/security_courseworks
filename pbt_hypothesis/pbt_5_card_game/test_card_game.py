@@ -128,16 +128,25 @@ def is_valid_play_hand(player: Hand, opponent: Hand, result: GameResult) -> bool
     Check that result is a valid outcome of play_hand(player, opponent)
     from the perspective of the player.
     '''
+
+    #finding {rank:counts} map for both
     player_rank = rank_counts(player)
     opponent_rank = rank_counts(opponent)
 
+    #Sort the map first based on values in decreasing order. If values are same, sort keys in increasing order
+    #Ultimately first pair of the map will give {strongest_rank:max_count}
     sorted_player_rank = dict(sorted(player_rank.items(), key=lambda item: (-item[1], item[0])))
     player_strongest_rank = list(sorted_player_rank.keys())[0]
     player_strongest_rank_count = sorted_player_rank[player_strongest_rank]
 
+    #same for the opponent
     sorted_opponent_rank = dict(sorted(opponent_rank.items(), key=lambda item: (-item[1], item[0])))
     opponent_strongest_rank = list(sorted_opponent_rank.keys())[0]
     opponent_strongest_rank_count = sorted_opponent_rank[opponent_strongest_rank]
+    
+    #Checking max_rank_count first
+    #if max_rank_count is same for both, check rank 
+    #otherwise make it tie
     if player_strongest_rank_count > opponent_strongest_rank_count:
        return result == GameResult.WIN
     elif player_strongest_rank_count < opponent_strongest_rank_count:
