@@ -1,6 +1,7 @@
 #lang forge/bsl
 
 open "common.frg"
+option verbose 2
 
 abstract sig GWAnimal {}
 sig Goat extends GWAnimal {}
@@ -8,7 +9,7 @@ sig Wolf extends GWAnimal {}
 
 sig GWState {
     gwnext: lone GWState,
-    gwshore: func GWAnimal -> Position, -- where is every animal?
+    gwshore: pfunc GWAnimal -> Position, -- where is every animal?
     gwboat: one Position -- where is the boat?
 }
 
@@ -47,7 +48,11 @@ pred GWfinalState[s: GWState] {
 
 
 pred GWcanTransition[pre: GWState, post: GWState] {
+    //the boat must move
     pre.gwboat != post.gwboat
+
+    // - the boat can carry 1-2 animals (not zero!)
+    // - every other animal stays in the same place
     let movedAnimals = {a: GWAnimal | pre.gwshore[a] != post.gwshore[a]} | {
         #movedAnimals > 0 && #movedAnimals <= 2
         //all a: GWAnimal - movedAnimals | pre.gwshore[a] = post.gwshore[a]
@@ -71,9 +76,9 @@ pred GWTransitionStates {
         all p: GWState | p != init implies reachable[p, init, gwnext]
 
         // - all state transitions must be valid
-        //all pre, post: GWState | GWcanTransition[pre, post] => (pre.gwnext = post)
+        //all pre: GWState | pre.gwnext != none implies GWcanTransition[pre, pre.gwnext]
 
-        //all pre, post: GWState | pre.gwnext = post && GWcanTransition[pre, post]
+        all pre, post: GWState | pre.gwnext = post implies GWcanTransition[pre, post]
 
     }
 }
