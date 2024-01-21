@@ -4,7 +4,7 @@ open "common.frg"
 
 // Uncomment exactly ONE of these at a time:
 open "gw.wheat"    -- hidden solution
-// open "gw.frg"   -- your code
+//open "gw.frg"   -- your code
 
 test suite for GWValidStates {
 
@@ -50,11 +50,42 @@ test suite for GWValidStates {
 }
 
 test suite for GWinitState {
+    example validGWinitState is GWinitState[GWState] for {
+    GWState = `S0
+    Goat = `G0 + `G1 + `G2
+    Wolf = `W0 + `W1 + `W2
+    GWAnimal = Goat + Wolf
+    Far = `Far0
+    Near = `Near0
+    Position = Near + Far
+    gwshore =   `S0 -> `G0 -> Near +
+                `S0 -> `G1 -> Near +
+                `S0 -> `G2 -> Near +
+                `S0 -> `W0 -> Near +
+                `S0 -> `W1 -> Near +
+                `S0 -> `W2 -> Near
+    gwboat = `S0  -> `Near0
+    }
 }
 
 test suite for GWfinalState {
+    example validGWfinalState is GWfinalState[GWState] for {
+    GWState = `S0
+    Goat = `G0 + `G1 + `G2
+    Wolf = `W0 + `W1 + `W2
+    GWAnimal = Goat + Wolf
+    Far = `Far0
+    Near = `Near0
+    Position = Near + Far
+    gwshore =   `S0 -> `G0 -> Far +
+                `S0 -> `G1 -> Far +
+                `S0 -> `G2 -> Far +
+                `S0 -> `W0 -> Far +
+                `S0 -> `W1 -> Far +
+                `S0 -> `W2 -> Far
+    gwboat = `S0  -> `Far0
+    }
 }
-
 test suite for GWcanTransition {
 
     example validTransition is {some pre, post: GWState | GWcanTransition[pre, post]} for {
@@ -190,4 +221,3 @@ test suite for GWNeverEating {
     }
 
 }
-

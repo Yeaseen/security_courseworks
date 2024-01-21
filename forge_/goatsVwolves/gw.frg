@@ -1,4 +1,4 @@
-#lang forge/bsl
+#lang forge
 
 open "common.frg"
 option verbose 2
@@ -56,7 +56,9 @@ pred GWcanTransition[pre: GWState, post: GWState] {
     let movedAnimals = {a: GWAnimal | pre.gwshore[a] != post.gwshore[a]} | {
         #movedAnimals > 0 && #movedAnimals <= 2
         //all a: GWAnimal - movedAnimals | pre.gwshore[a] = post.gwshore[a]
-        all a: GWAnimal | (some b: movedAnimals | a = b) implies pre.gwshore[a] = post.gwshore[a]
+
+        all a: GWAnimal | not (a in movedAnimals) => pre.gwshore[a] = post.gwshore[a]
+
     }
 }
 
@@ -73,12 +75,13 @@ pred GWTransitionStates {
 
         // Every state except the initial state must be reachable from the initial
         
-        all p: GWState | p != init implies reachable[p, init, gwnext]
+        all s: GWState | s != init => reachable[s, init, gwnext]
 
         // - all state transitions must be valid
-        //all pre: GWState | pre.gwnext != none implies GWcanTransition[pre, pre.gwnext]
+        all pre: GWState | pre.gwnext != none => GWcanTransition[pre, pre.gwnext]
 
-        all pre, post: GWState | pre.gwnext = post implies GWcanTransition[pre, post]
+        //some pre, post: GWState | GWcanTransition[pre, post]
+
 
     }
 }
