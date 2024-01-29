@@ -20,9 +20,9 @@ one sig Open extends Door {}
 one sig Closed extends Door {}
 
 sig Elevator {
-  var floor : one Floor,
-  var door : one Door,
-  var requests : set Floor,
+  var floor : one Floor,  -- changable 
+  var door : one Door,    -- changable
+  var requests : set Floor,  -- changable
   var nextRequest : one Floor,  // nextRequest and lastMove fields only used in
   var lastMove: one Direction   // procedures 4 and 5, ignore otherwise
 }
@@ -34,8 +34,11 @@ pred floors {
   no Bottom.below
   -- Connected (could do via either top or bottom)
   all f : Floor | f in Bottom.*above
+  -- all f : Floor | f in Top.*below
   -- Ensures above/below relations match up
+  --  if a floor A is above floor B (A.above = B)
   ~above = below
+  -- ~below = above
 }
 
 --------------------------------------------------------------------------------
@@ -63,7 +66,8 @@ pred moveUp[e: Elevator] {
   moveUpEnabled[e]
   e.floor' = e.floor.above
   e.door' = Closed
-  e.requests in e.requests'
+  --e.requests is a subset of e.requests', meaning requests may grow or remain same in the next state
+  e.requests in e.requests'   
   e.nextRequest' = e.nextRequest
   e.lastMove' = Up
 }
