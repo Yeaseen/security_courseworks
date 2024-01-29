@@ -7,16 +7,23 @@ open "elevator.frg" --- import elevator procedures
 --    Find a way to make the simple controller move while the door is open.
 --    Explain how to reproduce this safety violation (for example, with short
 --    click-by-click instructions).
--- A. TODO fill in here
---  (add more lines if you need)
+-- A. The moment the door just opens at Floor #n, clicking for any floor below #n will make the 
+--    elevator go down while the door is open. However, this doesn't happen if clicking for any 
+--    floor above #n is done.
+--  
 -- 
 -- 
 
 --------------------------------------------------------------------------------
 -- Q. What is liveness and in what way is it important to an elevator?
--- A. TODO fill in here
---  (add more lines if you need)
--- 
+-- A. Liveness properties guarantee that a favorable outcome will ultimately occur. 
+-- For instance, in a mutual exclusion algorithm, the liveness property guarantees 
+-- that attempts to enter and leave the critical section will be successful after some time. 
+-- This suggests that the system is free from deadlock and starvation.
+-- In the case of an elevator system, liveness ensures that the elevator does not get 
+-- stuck indefinitely at a particular floor or in between floors, eventually avoiding deadlocks. 
+-- Another property ensures that every request is eventually serviced. That means if a call button 
+-- is pressed on any floor, the elevator will eventually arrive at that floor to serve the request.
 -- 
 
 --------------------------------------------------------------------------------
