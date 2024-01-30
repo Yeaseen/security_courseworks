@@ -37,10 +37,10 @@ open "elevator.frg" --- import elevator procedures
 
 -- A. [procedure1]
 --  Name of procedure1: ManageBasicElevatorOperations
---  It ensures the elevator remains stationary if there are no requests and engages in pickup at the current 
---  floor if needed. The procedure intelligently decides against moving upwards if there are pending requests on 
---  lower floors and refrains from moving downwards in the absence of lower floor requests.
--- 
+--  This ensures that the elevator stays put when there are no pending requests and 
+--  performs pickups on the current floor as required. The method smartly avoids ascending 
+--  if there are outstanding requests on the floors below and similarly avoids descending 
+--  when there are no requests on the lower floors.
 
 -- procedure2
 --  Name of procedure2: EndToEndVerticalCycle
@@ -71,7 +71,7 @@ open "elevator.frg" --- import elevator procedures
 
 -- procedure5
 --  Name of procedure5: DynamicRequestResponseStrategy
---  To put procedure5 in forge/temporal language, we can say { procedure4 in procedure5 }
+--  To put procedure5 in forge/temporal language, we can say { procedure4 implies procedure5 }
 --  So, In addition to doing what procedure4 does, the procedure5 does a strategic decision-making mechanism when choosing a new nextRequest: 
 --  if the elevator is already moving upwards and a new request is made, it prioritizes requests on the higher floors; 
 --  conversely, if moving downwards, it favors lower floor requests.
@@ -96,16 +96,42 @@ test expect {
   test1: {traces implies elevatorOnlyMoveWhenDoorClosed[Elevator]} for exactly 1 Elevator is theorem
 }
 
+-- I added a new sfety property predicate and test case for this
+// Safety property: Don't move when the door is open
+
+pred elevatorNotMoveWhenDoorOpened[e: Elevator] {
+  e.door = Open  => e.floor = e.floor'
+}
+
+test expect {
+  -- test basic properties here
+  test2: {traces implies elevatorNotMoveWhenDoorOpened[Elevator]} for exactly 1 Elevator is theorem
+}
+
+
 // property: forward progress is always possible
 pred forwardProgress[e: Elevator] {
   always eventually enabled[e]
 }
+
+-- I added a test for forwardProgress predicate
+test expect {
+  -- test basic properties here
+  test3: {traces implies forwardProgress[Elevator]} for exactly 1 Elevator is theorem
+}
+
 
 // Liveness property: every request for every elevator is eventually served
 pred everyonePickedUp[e: Elevator] {
   always { 
     all f: Floor | f in e.requests => eventually {f not in e.requests}
   }
+}
+
+-- added a test case for testing everyonePickedUp predicate
+test expect {
+  -- testing Liveness property: everyonePickedUp
+  test4: {traces and always everyonePickedUp[Elevator] implies forwardProgress[Elevator]} for exactly 1 Elevator is theorem
 }
 
 // property: the elevator only moves up/down if there are
@@ -115,6 +141,12 @@ pred noPointlessTrips[e: Elevator] {
   always {moveUp[e] => some (e.floor.^above & e.requests)}
 }
 
+-- added a test case for testing noPointlessTrips predicate
+test expect {
+  -- testing Liveness property: noPointlessTrips
+  test5: {traces and always noPointlessTrips[Elevator] implies forwardProgress[Elevator]} for exactly 1 Elevator is theorem
+}
+
 // property: a request may exist above and below the elevator
 pred canRequestAboveAndBelow[e: Elevator] {
   eventually {
@@ -122,6 +154,28 @@ pred canRequestAboveAndBelow[e: Elevator] {
     some (e.requests & e.floor.^above)
   }
 }
+
+-- added a test case for testing canRequestAboveAndBelow predicate
+test expect {
+  -- testing Liveness property: canRequestAboveAndBelow
+  test6: {traces and always canRequestAboveAndBelow[Elevator] implies forwardProgress[Elevator]} for exactly 1 Elevator is theorem
+}
+
+// I added a propoerty:: a request may exist Top and Bottom of the elevator
+pred canRequestTopAndBottom[e: Elevator] {
+  eventually {
+    some (e.requests & Top)
+    some (e.requests & Bottom)
+  }
+}
+
+-- added a test case for testing canRequestTopAndBottom predicate
+test expect {
+  -- testing property: canRequestTopAndBottom
+  test7: {traces and always canRequestTopAndBottom[Elevator] implies forwardProgress[Elevator]} for exactly 1 Elevator is theorem
+}
+
+
 
 test expect {
   -- procedure1
@@ -154,3 +208,36 @@ test expect {
 }
 
 
+-- Here is the predicate that catches relationship between procedure4 and procedure5
+pred EfficientProcedureRelationship[e: Elevator] {
+  -- Check if procedure4 is true then procedure5 should also be true
+  (procedure4[e] implies procedure5[e])
+  
+  -- Check if procedure5 leads to forwardProgress
+  (procedure5[e] implies forwardProgress[e])
+}
+
+test expect {
+  fp6: {traces and always EfficientProcedureRelationship[Elevator] implies forwardProgress[Elevator]} for exactly 1 Elevator is theorem
+}
+
+-- The following one combines strategies from both procedure3 and procedure2
+-- This new predicate could be structured to prioritize the movement logic of 
+-- procedure3 (which is more responsive to the location of requests) 
+-- while ensuring the continuous operation from procedure2 is respected
+
+pred HybridElevatorOperation[e: Elevator] {
+  -- Incorporate request-based movement from procedure3
+  procedure3[e]
+
+  -- Apply continuous movement logic from procedure2 when no specific requests dictate movement
+  no e.requests implies procedure2[e]
+
+  -- Optional: Add any additional specific conditions or optimizations that combine elements from both procedures
+  -- Example condition: Ensure the elevator moves in the direction of the majority of requests if idle
+}
+
+
+test expect {
+  fp7: {traces and always HybridElevatorOperation[Elevator] implies forwardProgress[Elevator]} for exactly 1 Elevator is theorem
+}
