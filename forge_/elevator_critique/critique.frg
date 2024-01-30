@@ -37,7 +37,7 @@ open "elevator.frg" --- import elevator procedures
 
 -- A. [procedure1]
 --  Name of procedure1: ManageBasicElevatorOperations
---  This ensures that the elevator stays put when there are no pending requests and 
+--  This ensures that the elevator stays still when there are no pending requests and 
 --  performs pickups on the current floor as required. The method smartly avoids ascending 
 --  if there are outstanding requests on the floors below and similarly avoids descending 
 --  when there are no requests on the lower floors.
@@ -233,10 +233,7 @@ pred HybridElevatorOperation[e: Elevator] {
   -- Apply continuous movement logic from procedure2 when no specific requests dictate movement
   no e.requests implies procedure2[e]
 
-  -- Optional: Add any additional specific conditions or optimizations that combine elements from both procedures
-  -- Example condition: Ensure the elevator moves in the direction of the majority of requests if idle
 }
-
 
 test expect {
   fp7: {traces and always HybridElevatorOperation[Elevator] implies forwardProgress[Elevator]} for exactly 1 Elevator is theorem
