@@ -230,9 +230,6 @@ pred HybridElevatorOperation[e: Elevator] {
   -- Incorporate request-based movement from procedure3
   procedure3[e]
 
-  -- Apply continuous movement logic from procedure2 when no specific requests dictate movement
-  no e.requests implies procedure2[e]
-
 }
 
 test expect {
