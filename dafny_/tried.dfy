@@ -14,13 +14,25 @@ requires 0 <= u < a1.Length
 decreases (u - l)
 
 ensures a1.Length == a.Length
+ensures forall i :: 0 <= i < l || (i > u && i < a1.Length) ==> a[i] == a1[i]
 ensures forall i1, i2:: l <= i1 < i2 <= u ==> a[i1] <= a[i2]
 {
   a := new int[a1.Length];
-  assume forall k:: 0 <= k < a1.Length ==> a[k] == a1[k];
+  //assume forall k:: 0 <= k < a1.Length ==> a[k] == a1[k];
+
+  var k := 0;
+  while (k < a1.Length)
+    invariant 0 <= k <= a1.Length // Loop invariant for index bound.
+    invariant forall j :: 0 <= j < k ==> a[j] == a1[j] // Elements up to 'k' are copied correctly.
+    decreases a1.Length - k // Decreases clause for termination.
+  {
+    a[k] := a1[k];
+    k := k + 1;
+  }
+  assert forall k:: 0 <= k < a1.Length ==> a[k] == a1[k];
   if (l >= u)
   {
-    return;
+    return a;
   }
   else
   {
@@ -28,33 +40,43 @@ ensures forall i1, i2:: l <= i1 < i2 <= u ==> a[i1] <= a[i2]
 
     a := ms(a, l, m);
     assert forall i1, i2 :: l <= i1 < i2 <= m ==> a[i1] <= a[i2];
+    assert forall i :: (i > u && i < a1.Length) ==> a[i] == a1[i];
     a := ms(a, m+1, u);
     
+    assert forall i :: 0 <= i < l ==> a[i] == a1[i];
     assert forall i1, i2 :: l <= i1 < i2 <= m ==> a[i1] <= a[i2];
-    // This assertion should hold??
     assert forall i1, i2 :: m+1 <= i1 < i2 <= u ==> a[i1] <= a[i2];
      
     
     a := merge(a, l, m, u);
     assert forall i1, i2 :: l <= i1 < i2 <= u ==> a[i1] <= a[i2];
-    return;
+    return a;
   }
 }
 
 method merge(a1: array<int>, l: int, m: int, u: int) returns (a: array<int>)
   requires 0 <= l <= m < u < a1.Length
   requires forall i1, i2 :: l <= i1 < i2 <= m ==> a1[i1] <= a1[i2]
-  //requires forall k :: l < k <= m ==> a1[k-1] <= a1[k]
   requires forall i1, i2 :: m+1 <= i1 < i2 <= u ==> a1[i1] <= a1[i2]
   
-
   ensures a1.Length == a.Length
-  ensures forall i1, i2 ::
-           l <= i1 < i2 <= u ==> a[i1] <= a[i2]
+  ensures forall i :: 0 <= i < l || (i > u && i < a1.Length) ==> a[i] == a1[i]
+  ensures forall i1, i2 :: l <= i1 < i2 <= u ==> a[i1] <= a[i2]
 {
-  a := new int[a1.Length];
-  assume forall k:: 0 <= k < a1.Length ==> a[k] == a1[k];
-  
+   a := new int[a1.Length];
+  //assume forall k:: 0 <= k < a1.Length ==> a[k] == a1[k];
+
+  var p := 0;
+  while (p < a1.Length)
+    invariant 0 <= p <= a1.Length // Loop invariant for index bound.
+    invariant forall j :: 0 <= j < p ==> a[j] == a1[j] // Elements up to 'k' are copied correctly.
+    decreases a1.Length - p // Decreases clause for termination.
+  {
+    a[p] := a1[p];
+    p := p + 1;
+  }
+  assert forall k:: 0 <= k < a1.Length ==> a[k] == a1[k];
+
   var buf := new int[u-l+1];
   var i: int := l;
   var j: int := m + 1;
@@ -64,30 +86,31 @@ method merge(a1: array<int>, l: int, m: int, u: int) returns (a: array<int>)
 
   while (k < u-l+1)
   decreases u-l+1-k
-  invariant l <= m <= u
+  invariant l <= m < u
   invariant 0 <= k <= u-l+1
   invariant 0 <= l <= m < u < a.Length
   invariant forall i1, i2 :: l <= i1 < i2 <= m ==> a[i1] <= a[i2]
   invariant forall i1, i2 :: m+1 <= i1 < i2 <= u ==> a[i1] <= a[i2]
+  invariant forall i :: 0 <= i < l || (i > u && i < a1.Length) ==> a[i] == a1[i]
   {
     if(i>m && j>u){
       break;
     }
     else if (i > m) { 
-      buf[k] := a1[j];
+      buf[k] := a[j];
       j := j + 1;
     }
     else if (j > u) {
-      buf[k] := a1[i];
+      buf[k] := a[i];
       i := i + 1;
     }
-    else if (a1[i] <= a1[j]) {
-      buf[k] := a1[i];
+    else if (a[i] <= a[j]) {
+      buf[k] := a[i];
       i := i + 1;
       
     }
     else {
-      buf[k] := a1[j];
+      buf[k] := a[j];
       j := j + 1;
     }
     k := k + 1;
@@ -98,8 +121,9 @@ method merge(a1: array<int>, l: int, m: int, u: int) returns (a: array<int>)
   k := 0;
   while (k < u-l+1)
   decreases u-l+1-k
-  invariant l <= m <= u
+  invariant l <= m < u
   invariant 0 <= k <= u-l+1
+  invariant forall i :: 0 <= i < l || (i > u && i < a1.Length) ==> a[i] == a1[i]
   {
     a[l + k] := buf[k];
     k := k + 1;
