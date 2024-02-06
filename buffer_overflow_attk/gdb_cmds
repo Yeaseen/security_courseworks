@@ -1,0 +1,52 @@
+gdb vulnerable
+b bof
+run
+
+print $ebp + 4 // the memory address which stores the ret address as value.
+x/4cb $ebp+4   // $ebp+4 points to this memory address : value
+
+0xbfffea2c:	0xb5	0x84	0x4	0x8  // 0x80484b5
+
+n
+//before calling strcpy()
+//$ebp+8 (which is function argument) will be pushed into stack
+//Stack top will point to $ebp+8 which will point to "ABC"
+// load buffer adress($ebp-20) to eax 
+//eax will be pushed into stack
+//Stack top will point to buffer address ($ebp-20) which will point to ""
+
+print $ebp-20 // buffer address: 0xbfffea08
+x/1cb $ebp - 0x20// 1 byte 
+x/32cb $ebp - 0x20
+print (char *) $ebp - 0x20
+//Now buffer will show null string
+
+//Now call strcpy. and after returning from strcpy
+//stack top will point to buffer address which will point to "ABC"
+//Stack->next wil point to function argument str
+x/1cb $ebp - 0x20// 1 byte 
+x/56cb $ebp - 0x20
+print (char *) $ebp - 0x20
+
+x/4cb $ebp - (0xoffset)
+
+
+
+
+Calculation: 
+(memory address of ret address)bfffea2c – (buffer start)bfffea08 = 0x24  = 36
+
+buffer0...24  + 8bytes(gap) + 4bytes(ebp) = 36
+
+
+
+
+bfffea08 + 60 = BF FF EA 68
+
+Decimal value:
+3221219848 + 96 = 3221219944
+
+
+
+new buffer assress? 0xbffff378
+b *0x0804850
