@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 	bof(badfile);
 
 	printf("Return Properly\n");
-	
+
 	fclose(badfile);
 	return 1;
 }

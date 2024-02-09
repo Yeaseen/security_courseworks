@@ -1,13 +1,24 @@
+
+**Obviously, gdb stack frame is different from the actual stack frame of cpu** 
+
 gdb vulnerable
 b bof
 run
+n //to execute next instruction
 
+//Before bof() makes the ret
 print $ebp + 4 // the memory address which stores the ret address as value.
 x/4cb $ebp+4   // $ebp+4 points to this memory address : value
 
 0xbfffea2c:	0xb5	0x84	0x4	0x8  // 0x80484b5
 
-n
+You can find the ret address: i) from the disassembled file   ii) using gdb, before bof() returns, Stack top will show you this 
+
+
+Q. How many A's you have to put?
+A. ret_adress - buffer_start 
+
+
 //before calling strcpy()
 //$ebp+8 (which is function argument) will be pushed into stack
 //Stack top will point to $ebp+8 which will point to "ABC"
@@ -15,7 +26,7 @@ n
 //eax will be pushed into stack
 //Stack top will point to buffer address ($ebp-20) which will point to ""
 
-print $ebp-20 // buffer address: 0xbfffea08
+print $ebp-20 // buffer address: depends on what shell you are using
 x/1cb $ebp - 0x20// 1 byte 
 x/32cb $ebp - 0x20
 print (char *) $ebp - 0x20
@@ -28,25 +39,23 @@ x/1cb $ebp - 0x20// 1 byte
 x/56cb $ebp - 0x20
 print (char *) $ebp - 0x20
 
-x/4cb $ebp - (0xoffset)
+
+//Calculation: 
+//(memory address where ret address is) – (buffer start) = 0x24  = 36
+//buffer0...24  + 8bytes(gap) + 4bytes(ebp) = 36
+
+//Shellcode injection
+Fake Ret address = buffer address + some value before shellcode starts
 
 
+ret2lic attack:
+gdb vulnerable2
+b main
+p system     // system address: 0xb7e42da0
+p exit         // exit address: 0xb7e369d0
+// $BINSH address: 0xbfffffc1    //It's hard to figure out 
 
-
-Calculation: 
-(memory address of ret address)bfffea2c – (buffer start)bfffea08 = 0x24  = 36
-
-buffer0...24  + 8bytes(gap) + 4bytes(ebp) = 36
-
-
-
-
-bfffea08 + 60 = BF FF EA 68
-
-Decimal value:
-3221219848 + 96 = 3221219944
-
-
-
-new buffer assress? 0xbffff378
-b *0x0804850
+//break right after reading
+break *0x8048531  
+r
+x/56cb $ebp - 0x20

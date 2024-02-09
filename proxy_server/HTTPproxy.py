@@ -144,8 +144,8 @@ with socket(AF_INET, SOCK_STREAM) as listen_skt:
         with socket(AF_INET, SOCK_STREAM) as server_socket:
             # connect to the local Python simple server
             # default port is 80 otherwise mentioned in the request
-            server_socket.connect(("localhost", server_port))
-            #server_socket.connect((host_as_string, server_port))
+            #server_socket.connect(("localhost", server_port))
+            server_socket.connect((host_as_string, server_port))
             server_socket.send(to_send)
 
             # keep reading to fully receive response from server

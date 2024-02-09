@@ -24,6 +24,6 @@ The ProxyServer will process this. If processing fails, ProxyServer will send 50
 ```bash
 echo "GET /simple.html HTTP/1.0\r\n\r\n" | nc localhost 1230
 
-echo "GET http://localhost:8080/simple.html HTTP/1.0\r\n\r\n" | nc localhost 1230
+echo "GET http://www.flux.utah.edu/simple.html HTTP/1.0\r\n\r\n" | nc localhost 1230
 
 ```
