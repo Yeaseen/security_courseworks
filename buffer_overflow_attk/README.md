@@ -1,4 +1,4 @@
-# Problems regarding running SEEDUbuntu-16.04-32bit.vmdk
+# Problems regarding setting and running SEEDUbuntu-16.04-32bit.vmdk
 
 ## Problem 1:
 
@@ -33,7 +33,7 @@ A critical error has occurred while running the virtual machine and machine
 execution has been stopped.
 ```
 
-So, I read the VirtualBox log file and found the error: "This kernel requires the following features not present on the CPU: pae"
+So, I read the VirtualBox log file and found the error: `This kernel requires the following features not present on the CPU: pae`
 If Enable PAE/NX is not checked, you won't be able to boot the kernel.
 
 ## Solution to Problem 2:
@@ -46,12 +46,14 @@ If Enable PAE/NX is not checked, you won't be able to boot the kernel.
 3- Check Extended Features : Enable PAE/NX
 ```
 
-# Disabling existing defense techniques
+# Prepare the required environment
 
 ## To disable ASLR:
 
 ```bash
 sudo sysctl -w kernel.randomize_va_space=0
+
+#To re-enable: sudo sysctl -w kernel.randomize_va_space=2
 ```
 
 ## To disable DEP, and Stack Canary
@@ -65,7 +67,6 @@ gcc -o vulnerable1 -z execstack -fno-stack-protector vulnerable1.c
 ```bash
 sudo chown root vulnerable1
 sudo chmod 4755 vulnerable1
-
 ```
 
 ## Linking `/bin/sh` to `/bin/zsh` to prevent deafult countermeasure of `/bin/dash` pointed by `/bin/sh`
