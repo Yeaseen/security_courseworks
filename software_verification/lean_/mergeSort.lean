@@ -8,14 +8,15 @@ def merge [Ord A] (xs : List A) (ys : List A) : List A :=
     match Ord.compare x' y' with
     | .lt | .eq => x' :: merge xs' (y' :: ys')
     | .gt => y' :: merge (x'::xs') ys'
- termination_by merge xs ys => xs.length + ys.length
+--termination_by merge xs ys => xs.length + ys.length -- decreasing length
+termination_by merge xs ys => (xs, ys)   -- decreasing
 
 def splitList (lst : List A) : (List A × List A) :=
   match lst with
   | [] => ([], [])  --if list is empty returns a pair of empty lists
-  | x :: xs =>
+  | x :: xs =>    -- else case
     let (a, b) := splitList xs
-    (x :: b, a)
+    (x :: b, a)  --alternation for even splitting
 
 theorem splitList_shorter_le (lst : List α) :
     (splitList lst).fst.length ≤ lst.length ∧ (splitList lst).snd.length ≤ lst.length := by
@@ -76,5 +77,5 @@ def sorted (xs : List Nat) : Prop :=
 
 
 --theorem mergeSort_sorts (xs : List Nat) :
- -- sorted (mergeSort xs) := by
+--  sorted (mergeSort xs) := by
 --  sorry
