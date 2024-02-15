@@ -13,7 +13,7 @@ all: $(DEPS)
 afl: fuzzgoat
 	/mnt/bigdata/YEASEEN/PG/AFLPlusPlus/afl-fuzz -i in -o out ./fuzzgoat @@
 
-aflASN: fuzzgoatASAN
+aflASN: fuzzgoat_ASAN
 	/mnt/bigdata/YEASEEN/PG/AFLPlusPlus/afl-fuzz -i in -o outASAN ./fuzzgoat_ASAN @@
 
 aflQ: fuzzgoatQ
