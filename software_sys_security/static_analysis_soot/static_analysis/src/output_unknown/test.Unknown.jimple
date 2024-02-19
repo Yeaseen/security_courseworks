@@ -1,0 +1,96 @@
+public class test.Unknown extends android.app.Activity
+{
+    private java.lang.String phoneNo;
+    private java.lang.String sms;
+
+    public void <init>(java.lang.String, java.lang.String)
+    {
+        test.Unknown r0;
+        java.lang.String r1, r2;
+
+        r0 := @this: test.Unknown;
+
+        r1 := @parameter0: java.lang.String;
+
+        r2 := @parameter1: java.lang.String;
+
+        specialinvoke r0.<android.app.Activity: void <init>()>();
+
+        r0.<test.Unknown: java.lang.String phoneNo> = r1;
+
+        r0.<test.Unknown: java.lang.String sms> = r2;
+
+        return;
+    }
+
+    public void aaaa()
+    {
+        test.Unknown r0;
+        java.lang.String $r1, $r2;
+        android.content.Context $r3, $r6;
+        android.widget.Toast $r4, $r7;
+        java.lang.Exception $r5;
+        android.telephony.SmsManager r8;
+
+        r0 := @this: test.Unknown;
+
+     label1:
+        r8 = staticinvoke <android.telephony.SmsManager: android.telephony.SmsManager getDefault()>();
+
+        $r2 = r0.<test.Unknown: java.lang.String phoneNo>;
+
+        $r1 = r0.<test.Unknown: java.lang.String sms>;
+
+        virtualinvoke r8.<android.telephony.SmsManager: void sendTextMessage(java.lang.String,java.lang.String,java.lang.String,android.app.PendingIntent,android.app.PendingIntent)>($r2, null, $r1, null, null);
+
+        $r3 = virtualinvoke r0.<test.Unknown: android.content.Context getApplicationContext()>();
+
+        $r4 = staticinvoke <android.widget.Toast: android.widget.Toast makeText(android.content.Context,java.lang.CharSequence,int)>($r3, "SMS Sent!", 1);
+
+        virtualinvoke $r4.<android.widget.Toast: void show()>();
+
+     label2:
+        goto label4;
+
+     label3:
+        $r5 := @caughtexception;
+
+        $r6 = virtualinvoke r0.<test.Unknown: android.content.Context getApplicationContext()>();
+
+        $r7 = staticinvoke <android.widget.Toast: android.widget.Toast makeText(android.content.Context,java.lang.CharSequence,int)>($r6, "SMS faild, please try again later!", 1);
+
+        virtualinvoke $r7.<android.widget.Toast: void show()>();
+
+        virtualinvoke $r5.<java.lang.Exception: void printStackTrace()>();
+
+     label4:
+        return;
+
+        catch java.lang.Exception from label1 to label2 with label3;
+    }
+
+    public void bbbb()
+    {
+        test.Unknown r0;
+        android.location.LocationManager r1;
+        android.location.Location r2;
+        java.lang.Object $r3;
+
+        r0 := @this: test.Unknown;
+
+        $r3 = virtualinvoke r0.<test.Unknown: java.lang.Object getSystemService(java.lang.String)>("location");
+
+        r1 = (android.location.LocationManager) $r3;
+
+        r2 = virtualinvoke r1.<android.location.LocationManager: android.location.Location getLastKnownLocation(java.lang.String)>("gps");
+
+        if r2 == null goto label1;
+
+        virtualinvoke r2.<android.location.Location: double getLatitude()>();
+
+        virtualinvoke r2.<android.location.Location: double getLongitude()>();
+
+     label1:
+        return;
+    }
+}
