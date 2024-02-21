@@ -13,9 +13,9 @@ public class AnalysisMain{
 	public static void main(String[] args){
 		
 		String arg1 = args[0];
-		System.out.println("argument 0===> "+arg1);
+		//System.out.println("argument 0===> "+arg1);
 		CLASSPATH = arg1 + "/";
-		System.out.println("initial CLASSPATH===> "+CLASSPATH);
+		//System.out.println("initial CLASSPATH===> "+CLASSPATH);
 		String filename = arg1.substring(arg1.lastIndexOf('/')+1);
 		OUTPUT = "output" + "_" + filename;
 				

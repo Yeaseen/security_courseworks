@@ -32,6 +32,18 @@ public class SimpleAPILookupTransformer extends BodyTransformer{
 		while(iter.hasNext()){
 			
 			Stmt s = (Stmt)iter.next();
+
+			if(s.containsInvokeExpr()){
+				InvokeExpr invokeExpr = s.getInvokeExpr();
+				SootMethod invSootMethod = invokeExpr.getMethod();
+				SootClass  declaringSootClass = invSootMethod.getDeclaringClass();
+
+				if(!declaringSootClass.isApplicationClass()){
+					String apiSignature = invSootMethod.getSignature();
+					apis.add(apiSignature);
+				}
+			}
+			
 			
 			//Check if current statement is an InvokeStmt
 			//i.e. function call without a return value
