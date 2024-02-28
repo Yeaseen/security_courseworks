@@ -24,6 +24,11 @@ mkdir -p "${BUILD_DIR}"
 export CC=/mnt/bigdata/YEASEEN/PG/AFLPlusPlus/afl-clang-fast  # Adjust this path as necessary
 export CXX=/mnt/bigdata/YEASEEN/PG/AFLPlusPlus/afl-clang-fast++  # Adjust this path as necessary
 
+
+#these commands are used 
+# to configure (cmake), 
+# to build (make -j$(nproc)), and 
+# to install (make install) the libarchive library
 # Step 4: Run cmake from the build directory
 echo "Running cmake with AFL's compilers..."
 cd "${BUILD_DIR}"
