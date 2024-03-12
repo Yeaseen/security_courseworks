@@ -17,7 +17,7 @@ def handle_connection(skt, client_address):
     # read from the client until a double newline is received
     while b"\r\n\r\n" not in client_request_bytes:
         client_request_bytes += skt.recv(1024)
-
+    
     # check if the message that just came is valid
     client_request_lines = client_request_bytes.split(b"\r\n")
     if len(client_request_lines[0].split(b" ")) != 3:
@@ -159,5 +159,6 @@ with socket(AF_INET, SOCK_STREAM) as listen_skt:
     while True:
         skt, client_address = listen_skt.accept()
         #handle_connection(skt,client_address)
+        #logging.debug("Client Connected: "+ client_address)
         new_thread = threading.Thread(target=handle_connection, args=(skt, client_address))
         new_thread.start()
