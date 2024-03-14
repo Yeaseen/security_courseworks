@@ -41,7 +41,7 @@ from enum import Enum, auto
 import random
 import sys
 import time
-
+from queue import Queue
 ###############################################################################
 
 ## ************************* BASIC DATA STRUCTURES ****************************
@@ -97,6 +97,11 @@ class Pkt:
 ##
 ## ****************************************************************************
 
+def calculate_checksum(seqnum, acknum, payload):
+    checksum = seqnum + acknum
+    for byte in payload:  # `payload` is already a bytes object
+        checksum += byte
+    return checksum
 class EntityA:
     # The following method will be called once (only) before any other
     # EntityA methods are called.  You can use it to do any initialization.
@@ -106,36 +111,56 @@ class EntityA:
     # zero and seqnum_limit-1, inclusive.  E.g., if seqnum_limit is 16, then
     # all seqnums must be in the range 0-15.
     def __init__(self, seqnum_limit):
-
-        if TRACE>0:
-            print('\n===== EntityA Initialization Starts=========\n')
-
+        
         test_msg = Msg(b'test_message')
         test_packet = Pkt(1, 0, 0,test_msg.data)
+        #if TRACE>0:
+        #    print(test_msg)
+        #    print(test_packet)
 
         self.seqnum_limit = seqnum_limit
-        self.seqnumA = 0
-        
+        self.current_seqnum = 0
+        self.last_packet = None
+        self.waiting_for_ack = False
+        self.message_queue = Queue()
+        if TRACE > 0:
+            print('\n===== EntityA Initialization Starts =====\n')
 
-        if TRACE>0:
-            print(test_msg)
-            print(test_packet)
-
-        pass
-
-    # Called from layer 5, passed the data to be sent to other side.
-    # The argument `message` is a Msg containing the data to be sent.
     def output(self, message):
-        pass
+        self.message_queue.put(message)
+        if not self.waiting_for_ack:
+            self.send_next_message()
+            
+    def send_next_message(self):
+        # Check if there are messages to send and we are not waiting for an ACK
+        if not self.message_queue.empty() and not self.waiting_for_ack:
+            message = self.message_queue.get()  # Get the next message from the queue
+            checksum = calculate_checksum(self.current_seqnum, 0, message.data)
+            packet = Pkt(self.current_seqnum, 0, checksum, message.data)
+            self.last_packet = packet  # Store this packet for potential retransmission
+            to_layer3(self, packet)  # Send the packet to layer 3
+            if TRACE > 0:
+                print(f'\nEntityA: Packet with seqnum {self.current_seqnum} sent.\n')
+            start_timer(self, 18)  # Start the timer to wait for an ACK
+            self.waiting_for_ack = True  # Indicate that we're now waiting for an ACK
 
-    # Called from layer 3, when a packet arrives for layer 4 at EntityA.
-    # The argument `packet` is a Pkt containing the newly arrived packet.
     def input(self, packet):
-        pass
+        # Process an incoming ACK packet
+        if self.waiting_for_ack and packet.acknum == self.current_seqnum:
+            self.waiting_for_ack = False  # ACK received; stop waiting for an ACK
+            stop_timer(self)  # Stop the timer as we've received the ACK
+            self.current_seqnum = (self.current_seqnum + 1) % self.seqnum_limit  # Prepare the seqnum for the next packet
+            self.send_next_message()  # Attempt to send the next message, if any
+            if TRACE > 0:
+                print(f'\nEntityA: ACK {packet.acknum} received. Next seqnum: {self.current_seqnum}.\n')
 
-    # Called when A's timer goes off.
     def timer_interrupt(self):
-        pass
+        # Handles the timeout event if the ACK wasn't received in time
+        if self.waiting_for_ack:
+            to_layer3(self, self.last_packet)  # Retransmit the last packet
+            start_timer(self, 18)  # Restart the timer for the retransmitted packet
+            if TRACE > 0:
+                print(f'\nEntityA: Timer expired. Resending packet with seqnum {self.current_seqnum}.\n')
 
 class EntityB:
     # The following method will be called once (only) before any other
@@ -143,12 +168,33 @@ class EntityB:
     #
     # See comment for the meaning of seqnum_limit.
     def __init__(self, seqnum_limit):
-        pass
+        self.expected_seqnum = 0  # The next expected sequence number
+        self.seqnum_limit = seqnum_limit  # Upper bound for sequence numbers
+        if TRACE > 0:
+            print('\n===== EntityB Initialization Starts =====\n')
 
-    # Called from layer 3, when a packet arrives for layer 4 at EntityB.
-    # The argument `packet` is a Pkt containing the newly arrived packet.
     def input(self, packet):
-        pass
+        # Verify checksum to detect corruption
+        checksum = calculate_checksum(packet.seqnum, packet.acknum, packet.payload)
+        if packet.checksum != checksum:
+            # Checksum error indicates corruption; ignore packet
+            return  # Optionally log this event if needed
+
+        # Check if the packet has the expected sequence number
+        if packet.seqnum == self.expected_seqnum:
+            if TRACE > 0:
+                print(f'\nEntityB: Correct packet {packet.seqnum} received. Delivering to layer5 and sending ACK.\n')
+            # Deliver the packet's data to the application layer
+            to_layer5(self, Msg(packet.payload))
+            # Prepare to send an acknowledgment packet back to EntityA
+            self.expected_seqnum = (self.expected_seqnum + 1) % self.seqnum_limit
+            
+      # Acknowledge the last correctly received packet
+        # Adjusting for the sequence number to wrap correctly
+        last_correct_seqnum = (self.expected_seqnum - 1 + self.seqnum_limit) % self.seqnum_limit
+        ack_checksum = calculate_checksum(last_correct_seqnum, last_correct_seqnum, bytes(Msg.MSG_SIZE))
+        ack_packet = Pkt(last_correct_seqnum, last_correct_seqnum, ack_checksum, bytes(Msg.MSG_SIZE))
+        to_layer3(self, ack_packet)
 
     # Called when B's timer goes off.
     def timer_interrupt(self):
