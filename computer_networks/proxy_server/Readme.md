@@ -1,5 +1,13 @@
 # Client <--> ProxyServer --> Server
 
+## What this Multi-CLient_Proxy Server can do:
+
+- Accept & Process all requests from multiple clients. Check for correct implementation of `GET` method of `HTTP1.0`
+- Rejects other methods or invalid requests
+- Checks for BlockList and Cache responses before talking to the origin server
+- If a request is not blocked and its cached response is unmodified, the request is served from the cache list
+- Otherwise, contact the origin server, collects latest response, saves it and serves the client
+
 ## Step 1: Run a Simple Python Server on localhost:80
 
 Created a `simple.html` file to serve upon ProxyServer's request.
