@@ -1,6 +1,6 @@
 # KerFuzz: A Virtualized Environment for Kernel Fuzzing
 
-KerFuzz is a setup designed for fuzzing the Linux kernel using tools like QEMU and syzkaller. This document outlines the steps to prepare, configure, and build a Linux kernel tailored for fuzzing. For obvious reason, the kernel, syzkaller and the necessary are not uploaded on github.
+KerFuzz is a setup designed for fuzzing the Linux kernel using tools like QEMU and syzkaller. This document outlines the steps to prepare, configure, and build a Linux kernel tailored for fuzzing.
 
 ---
 
@@ -34,7 +34,7 @@ make menuconfig
 
 ### 3. Enable Necessary Debugging and Fuzzing Features
 
-Enable the following features in the kernel configuration:
+By pressing `space` tab, enable the following features in the kernel configuration:
 
 #### **General Debugging Options**:
 
@@ -108,10 +108,22 @@ Enable the following features in the kernel configuration:
 
 To resolve `/sys/kernel/config` issues or dependencies:
 
-- Add this line to the configuration:
+- **Add this line to the configuration**:
   ```plaintext
   CONFIG_CONFIGFS_FS=y
   ```
+
+#### KVM Support for Virtualization
+
+- **KVM Core and Architecture Support**:
+
+Make sure what the CPU architecture of the working machine by runnint `lscpu` command.
+
+```
+Virtualization  --->
+    [*] Kernel-based Virtual Machine (KVM) support (CONFIG_KVM)
+    [*] KVM for Intel processors (CONFIG_KVM_INTEL)
+```
 
 ---
 
@@ -401,3 +413,81 @@ If SSH fails with the error `too many tries`, it may be due to SSH attempting de
 ```bash
 ssh -vvv -i syzkaller_images/bullseye.id_rsa -p 10021 -o "StrictHostKeyChecking no" -o "IdentitiesOnly yes" root@localhost
 ```
+
+Now that you have a working Syzkaller build and your QEMU VM is functional, the next steps would involve configuring and running Syzkaller to start fuzzing the kernel.
+
+### Prepare a syzkaller configuration json file for KerFuzz
+
+- Create a work directory named `KerFuzz_wd`
+
+```bash
+mkdir KerFuzz_wd
+```
+
+- We will create `KerFuzz_config.json` file with the following configuration. Please, modify the paths based on your setup and provide the absolute paths if needed.
+
+```json
+{
+  "target": "linux/amd64",
+  "http": "127.0.0.1:56741",
+  "workdir": "/home/yeaseen/KerFuzz/KerFuzz_wd",
+  "kernel_obj": "/home/yeaseen/KerFuzz/linux-6.2",
+  "image": "/home/yeaseen/KerFuzz/syzkaller_images/bullseye.img",
+  "sshkey": "/home/yeaseen/KerFuzz/syzkaller_images/bullseye.id_rsa",
+  "syzkaller": "/home/yeaseen/KerFuzz/syzkaller",
+  "procs": 8,
+  "type": "qemu",
+  "vm": {
+    "count": 4,
+    "kernel": "/home/yeaseen/KerFuzz/linux-6.2/arch/x86/boot/bzImage",
+    "cmdline": "net.ifnames=0",
+    "cpu": 2,
+    "mem": 2048
+  }
+}
+```
+
+### Run syzkaller
+
+```bash
+syzkaller/bin/syz-manager -config KerFuzz_config.json
+```
+
+It will provide real-time output in the terminal and generate reports and logs in the specified workdir directory (e.g., `KerFuzz_wd`) as defined in the `KerFuzz_config.json` file.
+
+At this point, the project folder overview would be the following:
+
+```
+KerFuzz/
+├── KerFuzz_config.json # Configuration file for syzkaller manager
+├── KerFuzz_wd # Working directory for syzkaller (stores corpus, logs, etc.)
+├── linux-6.2 # Linux kernel source code (version 6.2)
+├── README.md # Project documentation
+├── syzkaller # Syzkaller repository (cloned and built)
+├── syzkaller_images # Directory for rootfs images and related files
+│ ├── bullseye # Temporary directory used during rootfs creation
+│ ├── bullseye.id_rsa # SSH private key for accessing the QEMU virtual machine
+│ ├── bullseye.id_rsa.pub # SSH public key for accessing the QEMU virtual machine
+│ └── bullseye.img # Root filesystem image for QEMU (Debian-based)
+└── vm.log # Log file for QEMU virtual machine
+```
+
+## Syzkaller Outputs
+
+### 1. Syzkaller Terminal Running
+
+The following image shows the Syzkaller manager running in the terminal, displaying progress updates including corpus size, coverage, and execution rate:
+
+<p align="center">
+  <img src="syz_terminal.png" alt="Syzkaller Terminal" width="600" height="400"/>
+</p>
+
+---
+
+### 2. Syzkaller Stats (HTML Output)
+
+The following image displays the Syzkaller statistics page, accessible via the web interface at `http://127.0.0.1:56741/`. It provides real-time updates on metrics such as total executions, crashes, and coverage:
+
+<p align="center">
+  <img src="syz_stat.png" alt="Syzkaller Stats" width="600" height="400"/>
+</p>

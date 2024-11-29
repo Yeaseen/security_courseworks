@@ -1,0 +1,18 @@
+{
+  "target": "linux/amd64",
+  "http": "127.0.0.1:56741",
+  "workdir": "/home/yeaseen/KerFuzz/KerFuzz_wd",
+  "kernel_obj": "/home/yeaseen/KerFuzz/linux-6.2",
+  "image": "/home/yeaseen/KerFuzz/syzkaller_images/bullseye.img",
+  "sshkey": "/home/yeaseen/KerFuzz/syzkaller_images/bullseye.id_rsa",
+  "syzkaller": "/home/yeaseen/KerFuzz/syzkaller",
+  "procs": 8,
+  "type": "qemu",
+  "vm": {
+    "count": 4,
+    "kernel": "/home/yeaseen/KerFuzz/linux-6.2/arch/x86/boot/bzImage",
+    "cmdline": "net.ifnames=0",
+    "cpu": 2,
+    "mem": 2048
+  }
+}
