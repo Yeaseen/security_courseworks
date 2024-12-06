@@ -24,12 +24,16 @@ Generate a default configuration:
 make defconfig
 ```
 
+If you don't want to do manual configuration fo `linux-6.2`, just copy the content of `linux-6.2_config.txt`
+and paste it inside `linux-6.2/.config` file. Then,  [Go to Step 4](#4-build-the-kernel)
+
+Otherwise, keep going.
+
 Open the configuration menu to configure the kernel:
 
 ```bash
 make menuconfig
 ```
-
 ---
 
 ### 3. Enable Necessary Debugging and Fuzzing Features
@@ -491,3 +495,80 @@ The following image displays the Syzkaller statistics page, accessible via the w
 <p align="center">
   <img src="syz_stat.png" alt="Syzkaller Stats" width="600" height="400"/>
 </p>
+
+# Steps to Run a Reproducer C Program in QEMU with a Custom Linux Kernel
+
+Syzkaller can sometimes create a reproducible C code for a crash which should be inside `KerFuzz_wd/crashes/<crash_id>/repro.cprog`
+
+## Prerequisites
+
+- A QEMU virtual machine set up with a custom Linux kernel.
+- SSH access to the QEMU VM.
+
+---
+
+## Instructions
+
+### Step 1: Prepare Kernel Headers
+
+On the host machine, navigate to your Linux kernel source directory and install the kernel headers:
+
+```bash
+cd linux-6.2
+make headers_install INSTALL_HDR_PATH=/tmp/kernel-headers
+```
+
+### Step 2: Start the QEMU VM
+
+Boot the QEMU virtual machine with your custom Linux kernel. [Follow this part](#step-1-command-to-boot-qemu-with-kernel-and-image).
+
+### Step 3: Transfer Files to the VM
+
+From another terminal, transfer the kernel headers and the reproducer C program to the QEMU VM:
+
+```bash
+scp -i syzkaller_images/bullseye.id_rsa -P 10021 -r /tmp/kernel-headers root@localhost:/usr/include
+scp -i syzkaller_images/bullseye.id_rsa -P 10021 repro.cprog root@localhost:/tmp
+```
+
+---
+
+### Step 4: Install Build Tools on the VM
+
+Access the QEMU VM via SSH:
+
+```bash
+ssh -i syzkaller_images/bullseye.id_rsa -p 10021 root@localhost
+```
+
+On the VM, update the package lists and install the necessary build tools:
+
+```bash
+apt update
+apt install -y build-essential
+```
+
+---
+
+### Step 5: Compile and Run the Reproducer
+
+Inside the QEMU VM:
+
+1. Navigate to `/tmp` where the `repro.cprog` file was uploaded:
+   ```bash
+   cd /tmp
+   ```
+2. Rename the file:
+   ```bash
+   mv repro.cprog repro.c
+   ```
+3. Compile the C program:
+   ```bash
+   gcc -o repro repro.c
+   ```
+4. Run the compiled program:
+   ```bash
+   ./repro
+   ```
+
+---
